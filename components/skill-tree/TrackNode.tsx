@@ -24,7 +24,9 @@ export default function TrackNode({ track, nodeState, completedCount }: Props) {
       return;
     }
     if (track.lessons.length > 0) {
-      router.push(`/learn/${track.lessons[0]}`);
+      // Dynamic lesson route — cast needed for Next.js strict typed routes
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push(`/learn/${track.lessons[0]}` as any);
     }
   }
 

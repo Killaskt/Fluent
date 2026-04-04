@@ -89,7 +89,8 @@ export default function LessonShell({
         nextLessonId={nextLessonId}
         onNextLesson={() =>
           nextLessonId
-            ? router.push(`/learn/${nextLessonId}`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ? router.push(`/learn/${nextLessonId}` as any)
             : router.push("/dashboard")
         }
       />
@@ -131,10 +132,10 @@ export default function LessonShell({
           {step.type === "concept" && (
             <ConceptStep step={step} onContinue={advance} />
           )}
-          {step.type === "see-it" && (
+          {step.type === "see_it" && (
             <SeeItStep step={step} onContinue={advance} />
           )}
-          {step.type === "try-it" && (
+          {step.type === "try_it" && (
             <TryItStep
               step={step}
               lessonId={lesson.id}
@@ -144,7 +145,7 @@ export default function LessonShell({
               }}
             />
           )}
-          {step.type === "lock-it" && (
+          {step.type === "lock_it" && (
             <LockItStep
               step={step}
               onComplete={(perfect) => {

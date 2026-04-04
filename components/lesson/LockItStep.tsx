@@ -20,7 +20,7 @@ export default function LockItStep({ step, onComplete }: Props) {
   function handleSelect(index: number) {
     if (state.kind === "correct" || state.kind === "revealed") return;
 
-    const isCorrect = index === step.correctIndex;
+    const isCorrect = index === step.correct_index;
 
     if (isCorrect) {
       setState({ kind: "correct", index });
@@ -45,7 +45,7 @@ export default function LockItStep({ step, onComplete }: Props) {
     if (state.kind === "correct" && index === state.index) {
       return `${base} bg-green-50 border-green-400 text-green-800`;
     }
-    if (state.kind === "revealed" && index === step.correctIndex) {
+    if (state.kind === "revealed" && index === step.correct_index) {
       return `${base} bg-green-50 border-green-400 text-green-800`;
     }
     if (

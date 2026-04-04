@@ -24,17 +24,9 @@ export default function TryItStep({ step, lessonId, onComplete }: Props) {
   const [attempts, setAttempts] = useState(0);
   const [isFirstTry, setIsFirstTry] = useState(true);
 
-  // Max attempts comes from payload if available, default 3
-  const maxAttempts =
-    typeof step.payload.max_attempts === "number"
-      ? step.payload.max_attempts
-      : 3;
-  const rubric =
-    typeof step.payload.rubric === "string" ? step.payload.rubric : "";
-  const expertPrompt =
-    typeof step.payload.expert_prompt === "string"
-      ? step.payload.expert_prompt
-      : null;
+  const maxAttempts = step.max_attempts;
+  const rubric = step.rubric;
+  const expertPrompt = step.expert_prompt;
 
   const attemptsLeft = maxAttempts - attempts;
 
@@ -89,7 +81,7 @@ export default function TryItStep({ step, lessonId, onComplete }: Props) {
           Scenario
         </p>
         <p className="text-gray-800 text-sm leading-relaxed">
-          {step.instructions}
+          {step.scenario}
         </p>
       </div>
 

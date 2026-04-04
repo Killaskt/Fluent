@@ -3,10 +3,10 @@ import LockItStep from "@/components/lesson/LockItStep";
 import type { LockItStep as LockItStepType } from "@/types";
 
 const step: LockItStepType = {
-  type: "lock-it",
+  type: "lock_it",
   question: "Which is the best practice?",
   options: ["Option A", "Option B", "Option C"],
-  correctIndex: 1,
+  correct_index: 1,
   explanation: "Option B is correct because it follows best practices.",
 };
 
