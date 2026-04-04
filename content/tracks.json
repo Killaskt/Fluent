@@ -1,0 +1,107 @@
+[
+  {
+    "id": "quick-start-office",
+    "title": "Quick Start: AI for Your Workday",
+    "tier": "free",
+    "order": 1,
+    "prerequisites": [],
+    "placement_test": null,
+    "lessons": ["qs-1", "qs-2", "qs-3"]
+  },
+  {
+    "id": "fundamentals-f1",
+    "title": "What Actually Exists",
+    "tier": "free",
+    "order": 2,
+    "prerequisites": ["quick-start-office"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["f1-1", "f1-2", "f1-3", "f1-4", "f1-5", "f1-6"]
+  },
+  {
+    "id": "fundamentals-f2",
+    "title": "Prompting That Actually Works",
+    "tier": "free",
+    "order": 3,
+    "prerequisites": ["fundamentals-f1"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["f2-1", "f2-2", "f2-3", "f2-4", "f2-5", "f2-6", "f2-7", "f2-8"]
+  },
+  {
+    "id": "fundamentals-f3",
+    "title": "Choosing the Right Tool",
+    "tier": "free",
+    "order": 4,
+    "prerequisites": ["fundamentals-f2"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["f3-1", "f3-2", "f3-3", "f3-4", "f3-5"]
+  },
+  {
+    "id": "fundamentals-f4",
+    "title": "Keeping Up Without Burning Out",
+    "tier": "free",
+    "order": 5,
+    "prerequisites": ["fundamentals-f3"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["f4-1", "f4-2", "f4-3", "f4-4"]
+  },
+  {
+    "id": "office-work-ow1",
+    "title": "Email & Communication",
+    "tier": "premium",
+    "order": 6,
+    "prerequisites": ["fundamentals-f1"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["ow-1-1", "ow-1-2", "ow-1-3", "ow-1-4", "ow-1-5"]
+  },
+  {
+    "id": "office-work-ow2",
+    "title": "Documents & Writing",
+    "tier": "premium",
+    "order": 7,
+    "prerequisites": ["fundamentals-f1"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["ow-2-1", "ow-2-2", "ow-2-3", "ow-2-4", "ow-2-5"]
+  },
+  {
+    "id": "office-work-ow3",
+    "title": "Meetings & Summaries",
+    "tier": "premium",
+    "order": 8,
+    "prerequisites": ["fundamentals-f1"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["ow-3-1", "ow-3-2", "ow-3-3", "ow-3-4", "ow-3-5"]
+  },
+  {
+    "id": "office-work-ow4",
+    "title": "Data & Organisation",
+    "tier": "premium",
+    "order": 9,
+    "prerequisites": ["fundamentals-f1"],
+    "placement_test": {
+      "questions": [],
+      "pass_threshold": 0.8
+    },
+    "lessons": ["ow-4-1", "ow-4-2", "ow-4-3", "ow-4-4", "ow-4-5"]
+  }
+]
