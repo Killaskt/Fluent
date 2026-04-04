@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/pre-pr-check.sh
 # Run this before opening any PR. Exits non-zero if any gate fails.
-# Called by: make pre-pr
+# Called by: npm run pre-pr
 # Called automatically by: Claude Code agents (CLAUDE.md §6)
 
 set -euo pipefail
@@ -35,12 +35,12 @@ warn() {
 bold "=== Pre-PR Gate ==="
 echo ""
 
-# ── 1. No unstaged changes ─────────────────────────────────────────────────
+# ── 1. Git state ───────────────────────────────────────────────────────────────
 bold "-- Git state"
 check "Working tree is clean" git diff --quiet
 check "No untracked files staged" bash -c 'test -z "$(git ls-files --others --exclude-standard)"'
 
-# ── 2. Branch is not main/master ───────────────────────────────────────────
+# ── 2. Branch is not main/master ──────────────────────────────────────────────
 bold "-- Branch"
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "master" ]]; then
@@ -51,7 +51,7 @@ else
   PASS=$((PASS + 1))
 fi
 
-# ── 3. Secret scanning ─────────────────────────────────────────────────────
+# ── 3. Secret scanning ────────────────────────────────────────────────────────
 bold "-- Secret scanning"
 SECRET_PATTERNS='(password|secret|api_key|apikey|auth_token|private_key|access_token)\s*[:=]\s*["\x27][^"\x27]{6,}'
 if git diff origin/main...HEAD 2>/dev/null | grep -iE "$SECRET_PATTERNS" >/dev/null 2>&1; then
@@ -61,7 +61,6 @@ else
   check "No obvious secrets in diff" true
 fi
 
-# Check for .env files accidentally staged
 if git diff --cached --name-only 2>/dev/null | grep -E '\.env$|\.env\.' >/dev/null 2>&1; then
   red "  [FAIL] .env file is staged — never commit secrets"
   FAIL=$((FAIL + 1))
@@ -69,32 +68,28 @@ else
   check "No .env files staged" true
 fi
 
-# ── 4. Lint ────────────────────────────────────────────────────────────────
-bold "-- Lint"
-if make -n lint >/dev/null 2>&1; then
-  check "Linter passes" make lint
-else
-  warn "Lint target not configured in Makefile (set LINT_CMD)"
-fi
+# ── 4. Lint + type-check ──────────────────────────────────────────────────────
+bold "-- Lint & types"
+check "ESLint + tsc --noEmit" npm run lint
 
-# ── 5. Tests ───────────────────────────────────────────────────────────────
+# ── 5. Tests ──────────────────────────────────────────────────────────────────
 bold "-- Tests"
-if make -n test >/dev/null 2>&1; then
-  check "Test suite passes" make test
-else
-  warn "Test target not configured in Makefile (set TEST_CMD)"
-fi
+check "Test suite passes" npm test
 
-# ── 6. No debug artifacts ─────────────────────────────────────────────────
+# ── 6. Production build ───────────────────────────────────────────────────────
+bold "-- Build"
+check "next build succeeds" npm run build
+
+# ── 7. Debug artifacts ────────────────────────────────────────────────────────
 bold "-- Artifacts"
-DEBUG_PATTERNS='console\.log\|debugger;\|binding\.pry\|import pdb\|pdb\.set_trace\|TODO.*REMOVE\|FIXME.*REMOVE'
+DEBUG_PATTERNS='console\.log\|debugger;\|TODO.*REMOVE\|FIXME.*REMOVE'
 if git diff origin/main...HEAD 2>/dev/null | grep -E "$DEBUG_PATTERNS" >/dev/null 2>&1; then
   warn "Debug statements or TODO-REMOVE markers found in diff"
 else
   check "No debug artifacts in diff" true
 fi
 
-# ── Summary ───────────────────────────────────────────────────────────────
+# ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 bold "=== Results ==="
 green "  Passed:   $PASS"

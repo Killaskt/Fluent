@@ -196,17 +196,15 @@ Every PR must include tests for:
 
 ### 5.4 Running Tests
 
-Always use the `Makefile` targets — never guess the underlying command:
+Always use `npm run` — never invoke the underlying tools directly:
 
 ```bash
-make test       # Run the full test suite
-make lint       # Run linter only
-make check      # lint + test combined
-make pre-pr     # Full pre-PR gate (runs scripts/pre-pr-check.sh)
+npm run lint      # ESLint + tsc --noEmit
+npm test          # Jest test suite
+npm run check     # lint + test combined
+npm run build     # Production build (catches errors dev mode misses)
+npm run pre-pr    # Full pre-PR gate (runs scripts/pre-pr-check.sh)
 ```
-
-If `make test` reports "No test command configured", the stack hasn't been set yet.
-Check `Makefile` for the `TEST_CMD` variable and update it, or ask the user.
 
 ---
 
@@ -215,21 +213,22 @@ Check `Makefile` for the `TEST_CMD` variable and update it, or ask the user.
 Run the automated gate first:
 
 ```bash
-make pre-pr
+npm run pre-pr
 ```
 
 `scripts/pre-pr-check.sh` enforces:
 
 - [ ] All new code has tests written and passing.
-- [ ] The full test suite passes locally with no failures.
-- [ ] The linter/formatter reports no errors.
+- [ ] The full test suite passes (`npm test`).
+- [ ] ESLint and TypeScript report no errors (`npm run lint`).
+- [ ] Production build succeeds (`npm run build`).
 - [ ] No secrets, credentials, or debug artifacts are staged.
 - [ ] The branch is up to date with the base branch (no avoidable merge conflicts).
 - [ ] The PR title is under 70 characters and describes the change, not the work done.
 - [ ] The PR body uses `.github/pull_request_template.md` (auto-applied by GitHub).
 - [ ] No unrelated files are included in the diff.
 
-If `make pre-pr` exits non-zero, fix all failures before pushing.
+If `npm run pre-pr` exits non-zero, fix all failures before pushing.
 Do not use `--no-verify` to bypass hooks. Do not open a PR with a failing gate.
 
 ---
@@ -299,4 +298,4 @@ Keep CLAUDE.md focused on conventions; put all issue tracking there.
 
 ---
 
-*Last updated: 2026-04-04. Update this file whenever agent conventions change. Log decisions in `.claude/KNOWN_ISSUES.md`.*
+*Last updated: 2026-04-04. Makefile removed — all tasks now use `npm run`. Update this file whenever agent conventions change. Log decisions in `.claude/KNOWN_ISSUES.md`.*
