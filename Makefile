@@ -5,12 +5,6 @@
 
 .PHONY: help install test lint format check pre-pr clean
 
-# ── Configuration ────────────────────────────────────────────────────────────
-# Override via: make test TEST_CMD="pytest -x"
-TEST_CMD  ?= echo "[WARN] No test command configured. Set TEST_CMD in Makefile."
-LINT_CMD  ?= echo "[WARN] No lint command configured. Set LINT_CMD in Makefile."
-FMT_CMD   ?= echo "[WARN] No format command configured. Set FMT_CMD in Makefile."
-
 # ── Targets ───────────────────────────────────────────────────────────────────
 
 help:           ## Show this help message
@@ -18,21 +12,16 @@ help:           ## Show this help message
 	  awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 install:        ## Install project dependencies
-	@echo "[install] Installing dependencies..."
-	@# Replace with: pip install -e ".[dev]"  OR  npm ci  OR  go mod download
-	@echo "[install] Done."
+	npm ci
 
 test:           ## Run the full test suite
-	@echo "[test] Running tests..."
-	@$(TEST_CMD)
+	npm test
 
 lint:           ## Run linter (no auto-fix)
-	@echo "[lint] Running linter..."
-	@$(LINT_CMD)
+	npm run lint && npm run type-check
 
-format:         ## Auto-format source files
-	@echo "[format] Formatting..."
-	@$(FMT_CMD)
+format:         ## Auto-format source files (no-op — ESLint handles formatting)
+	npm run lint -- --fix
 
 check: lint test ## Run lint + tests (used in CI)
 
@@ -41,6 +30,4 @@ pre-pr:         ## Full pre-PR gate — must pass before opening any PR
 	@bash scripts/pre-pr-check.sh
 
 clean:          ## Remove build artifacts and caches
-	@echo "[clean] Cleaning..."
-	@rm -rf dist/ build/ .pytest_cache/ __pycache__/ *.egg-info node_modules/.cache
-	@echo "[clean] Done."
+	@rm -rf .next/ node_modules/.cache

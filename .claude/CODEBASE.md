@@ -25,64 +25,65 @@
 /
 ├── app/                          # Next.js App Router root
 │   ├── (auth)/                   # Unprotected routes (no session required)
-│   │   ├── sign-in/              # Email/pass + Google OAuth sign-in
-│   │   ├── sign-up/              # Redirects to /waitlist after account creation
-│   │   └── waitlist/             # "You're on the list" holding page
+│   │   ├── sign-in/page.tsx      # Email/pass + Google OAuth sign-in ✓
+│   │   ├── sign-up/page.tsx      # Creates account → redirects to /waitlist ✓
+│   │   └── waitlist/page.tsx     # "You're on the list" holding page ✓
 │   ├── (app)/                    # Protected routes — gated by middleware.ts
-│   │   ├── dashboard/            # Home screen: streak, daily challenge, resume
-│   │   ├── learn/[lessonId]/     # Lesson engine — renders any lesson from JSON
-│   │   ├── track/[trackId]/      # Skill tree / module map for a track
-│   │   └── profile/              # User XP, badges, progress summary
-│   ├── api/                      # API route handlers (server-side only)
-│   │   └── score-prompt/         # POST — sends user prompt to Claude, returns score JSON
-│   ├── layout.tsx                # Root layout (fonts, providers)
-│   └── middleware.ts             # Auth check + waitlist gate (runs on every (app)/* route)
+│   │   ├── dashboard/page.tsx    # Home screen stub (Phase 2+) ✓
+│   │   ├── learn/[lessonId]/     # Lesson engine — Phase 3
+│   │   ├── track/[trackId]/      # Skill tree / module map — Phase 5
+│   │   └── profile/              # User XP, badges — Phase 5
+│   ├── api/
+│   │   └── score-prompt/         # POST — Claude prompt scorer — Phase 8
+│   ├── auth/callback/route.ts    # OAuth + email confirmation handler ✓
+│   ├── layout.tsx                # Root layout (fonts, metadata) ✓
+│   └── page.tsx                  # Root → redirects to /sign-in ✓
+│
+├── middleware.ts                 # Entry point — calls lib/supabase/middleware.ts ✓
 │
 ├── components/
-│   ├── lesson/                   # Lesson step components
-│   │   ├── ConceptStep.tsx       # Step 1 — text + optional diagram
-│   │   ├── SeeItStep.tsx         # Step 2 — example display (before/after, screenshot, scenario)
-│   │   ├── TryItStep.tsx         # Step 3 — interactive exercise types
-│   │   └── LockItStep.tsx        # Step 4 — quick knowledge check
-│   ├── gamification/
-│   │   ├── StreakCounter.tsx      # Flame icon + day count
-│   │   ├── XPBar.tsx             # Progress bar + XP total
-│   │   └── BadgeDisplay.tsx      # Badge grid / earned badge celebration
-│   └── ui/                       # shadcn/ui generated components (do not hand-edit)
+│   ├── lesson/                   # Phase 3 — lesson step components
+│   ├── gamification/             # Phase 5 — streak, XP bar, badges
+│   └── ui/                       # shadcn/ui components (run: npx shadcn@latest add <name>)
 │
 ├── lib/
 │   ├── supabase/
-│   │   ├── server.ts             # createServerClient() — use in Server Components + Route Handlers
-│   │   ├── client.ts             # createBrowserClient() — use in Client Components only
-│   │   └── middleware.ts         # createMiddlewareClient() — used in middleware.ts
-│   ├── claude.ts                 # scorePrompt(userPrompt, rubric) → ScoreResult
-│   ├── xp.ts                     # awardXP(), calculateStreak(), BADGE_DEFINITIONS
-│   └── content.ts                # loadLesson(id), loadTrack(id) — reads from content/lessons/
+│   │   ├── server.ts             # createClient() for Server Components + Route Handlers ✓
+│   │   ├── client.ts             # createClient() for Client Components only ✓
+│   │   └── middleware.ts         # updateSession() — auth check + waitlist gate logic ✓
+│   ├── claude.ts                 # scorePrompt() — Phase 8
+│   ├── xp.ts                     # awardXP(), calculateStreak(), BADGE_DEFINITIONS — Phase 4
+│   └── content.ts                # loadLesson(), loadTrack() — Phase 3
 │
 ├── content/
 │   └── lessons/                  # One JSON file per lesson (46 total for MVP)
-│       ├── _schema.json          # JSON schema — read this before authoring a lesson
-│       ├── qs-1.json             # Quick-Start lesson 1
-│       ├── qs-2.json
-│       ├── qs-3.json
-│       ├── f1-1.json             # Fundamentals Module 1, Lesson 1
-│       └── ...                   # (see Lesson ID Reference below)
+│       ├── _schema.json          # JSON schema — read before authoring — Phase 2
+│       └── ...
 │
 ├── supabase/
-│   └── migrations/               # SQL migration files — never edit existing ones, always add new
+│   └── migrations/
+│       └── 001_initial.sql       # profiles + user_progress, RLS, triggers ✓
 │
 ├── types/
-│   └── index.ts                  # Shared TypeScript types: Lesson, Step, UserProgress, Badge, etc.
+│   ├── index.ts                  # Lesson, Step, UserProgress, Badge, Profile types ✓
+│   └── database.ts               # Supabase DB type stub (regen: npx supabase gen types) ✓
 │
-├── docs/                         # Project documentation — CHECK HERE before assuming something
-│   ├── ProjectSummary.md         # Full product vision, curriculum architecture, monetization
-│   └── first-office-course.md    # Lesson-by-lesson MVP content breakdown (all 46 lessons)
+├── jest.config.ts / jest.setup.ts  # Test config ✓
+├── tailwind.config.ts            # Brand colours at theme.extend.colors.brand ✓
+├── next.config.ts                # Next.js config ✓
+├── .env.example                  # All required env vars ✓
+│
+├── docs/                         # CHECK HERE before assuming something isn't defined
+│   ├── ProjectSummary.md         # Product vision, curriculum architecture, monetization
+│   └── first-office-course.md    # All 46 lesson breakdowns
 │
 └── .claude/
     ├── CODEBASE.md               # This file — keep it current
     ├── KNOWN_ISSUES.md           # Open decisions and deferred items
     └── settings.json             # Claude Code hooks and permissions
 ```
+
+**✓ = built and working. No mark = planned, not yet built.**
 
 ---
 
