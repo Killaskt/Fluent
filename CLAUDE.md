@@ -260,14 +260,9 @@ user can answer without scrolling back through the conversation.
 
 ## 10. Known Issues and Open Decisions
 
-> This section tracks unresolved agent behavior questions. Add items here when they arise
-> during sessions. Each item should include the date it was raised and a brief description.
-> Remove items once a decision is made and codified above.
-
-| Date | Issue | Status |
-|---|---|---|
-| 2026-04-04 | Initial CLAUDE.md created — no open issues yet | Open |
+Tracked in **`.claude/KNOWN_ISSUES.md`** — open that file to view, add, or resolve items.
+Keep CLAUDE.md focused on conventions; put all issue tracking there.
 
 ---
 
-*Last updated: 2026-04-04. Update this file whenever agent conventions change.*
+*Last updated: 2026-04-04. Update this file whenever agent conventions change. Log decisions in `.claude/KNOWN_ISSUES.md`.*
