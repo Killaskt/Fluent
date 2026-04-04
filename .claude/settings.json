@@ -9,6 +9,15 @@
             "command": "if command -v make >/dev/null 2>&1 && make -n lint >/dev/null 2>&1; then echo '--- Auto-lint after edit ---' && make lint 2>&1 | tail -30; fi"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get('file_path',''))\" 2>/dev/null || echo ''); if [ -n \"$file\" ] && echo \"$file\" | grep -qvE '\\.(claude|github)/|CODEBASE\\.md|KNOWN_ISSUES\\.md'; then echo \"REMINDER: You created $file — update .claude/CODEBASE.md if this is a new module, component, route, or lib file.\"; fi"
+          }
+        ]
       }
     ],
     "PreToolUse": [
