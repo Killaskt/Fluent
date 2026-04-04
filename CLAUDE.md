@@ -162,24 +162,29 @@ Every PR must include tests for:
 
 ### 5.4 Running Tests
 
-Before any commit that touches logic:
+Always use the `Makefile` targets — never guess the underlying command:
 
 ```bash
-# Run the full test suite
-<insert project test command here>
-
-# Run linter
-<insert project lint command here>
+make test       # Run the full test suite
+make lint       # Run linter only
+make check      # lint + test combined
+make pre-pr     # Full pre-PR gate (runs scripts/pre-pr-check.sh)
 ```
 
-If the test command is unknown, check `package.json`, `pyproject.toml`, `Makefile`, or
-`README` for the canonical test invocation. Ask the user if none is found.
+If `make test` reports "No test command configured", the stack hasn't been set yet.
+Check `Makefile` for the `TEST_CMD` variable and update it, or ask the user.
 
 ---
 
 ## 6. Pre-PR Checklist
 
-Before opening any pull request, the following must be true:
+Run the automated gate first:
+
+```bash
+make pre-pr
+```
+
+`scripts/pre-pr-check.sh` enforces:
 
 - [ ] All new code has tests written and passing.
 - [ ] The full test suite passes locally with no failures.
@@ -187,10 +192,11 @@ Before opening any pull request, the following must be true:
 - [ ] No secrets, credentials, or debug artifacts are staged.
 - [ ] The branch is up to date with the base branch (no avoidable merge conflicts).
 - [ ] The PR title is under 70 characters and describes the change, not the work done.
-- [ ] The PR body includes a summary and a test plan.
+- [ ] The PR body uses `.github/pull_request_template.md` (auto-applied by GitHub).
 - [ ] No unrelated files are included in the diff.
 
-If any item fails, fix it before pushing. Do not use `--no-verify` to bypass hooks.
+If `make pre-pr` exits non-zero, fix all failures before pushing.
+Do not use `--no-verify` to bypass hooks. Do not open a PR with a failing gate.
 
 ---
 

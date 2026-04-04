@@ -1,0 +1,57 @@
+# ── Secrets & environment ─────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials.json
+service-account*.json
+
+# ── OS / editor ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Node / JS ─────────────────────────────────────────────────────────────
+node_modules/
+.npm/
+.yarn/
+dist/
+.next/
+.nuxt/
+.cache/
+*.tsbuildinfo
+
+# ── Go ────────────────────────────────────────────────────────────────────
+/vendor/
+
+# ── Build artifacts ───────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+*.orig
