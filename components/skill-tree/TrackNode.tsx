@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Track } from "@/lib/content";
+import type { Track } from "@/types";
 
 export type NodeState = "locked" | "unlocked" | "completed" | "tested_out";
 

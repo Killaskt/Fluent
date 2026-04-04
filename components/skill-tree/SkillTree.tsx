@@ -1,6 +1,6 @@
 "use client";
 
-import type { Track } from "@/lib/content";
+import type { Track } from "@/types";
 import TrackNode, { type NodeState } from "./TrackNode";
 
 interface Props {

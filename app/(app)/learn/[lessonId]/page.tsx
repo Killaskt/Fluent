@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadLesson, loadAllTracks } from "@/lib/content";
+import { loadLesson, getAllTracks } from "@/lib/content";
 import LessonShell from "@/components/lesson/LessonShell";
 
 interface Props {
@@ -29,7 +29,7 @@ export default async function LessonPage({ params }: Props) {
     .single() as { data: { current_streak: number; total_xp: number } | null };
 
   // Determine next lesson id
-  const allTracks = await loadAllTracks();
+  const allTracks = await getAllTracks();
   let nextLessonId: string | null = null;
 
   outer: for (const track of allTracks) {

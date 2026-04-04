@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadTrack, loadAllTracks } from "@/lib/content";
+import { loadTrack, getAllTracks } from "@/lib/content";
 import SkillTree from "@/components/skill-tree/SkillTree";
 
 interface Props {
@@ -21,7 +21,7 @@ export default async function TrackPage({ params }: Props) {
   const track = await loadTrack(trackId);
   if (!track) notFound();
 
-  const allTracks = await loadAllTracks();
+  const allTracks = await getAllTracks();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: progress } = await (supabase.from("user_progress") as any)

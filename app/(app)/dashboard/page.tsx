@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadAllTracks } from "@/lib/content";
+import { getAllTracks } from "@/lib/content";
 import StreakBadge from "@/components/gamification/StreakBadge";
 
 export default async function DashboardPage() {
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   const currentStreak = rawProgress?.current_streak ?? 0;
 
   // Find first incomplete lesson for "Continue Learning"
-  const allTracks = await loadAllTracks();
+  const allTracks = await getAllTracks();
   const sorted = [...allTracks].sort((a, b) => a.order - b.order);
   let firstIncompleteLessonId: string | null = null;
   for (const track of sorted) {
