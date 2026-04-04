@@ -4,6 +4,14 @@ This file governs all Claude Code sessions and sub-agent behavior for the Fluent
 It is the authoritative source of truth for architecture decisions, agent conventions, and
 code quality standards. Read it fully before taking action.
 
+### Every session must do this first
+
+1. Read **`.claude/CODEBASE.md`** — it's the living map of the repo. Use it instead of
+   exploring the file tree. It tells you where things are and where to add new things.
+2. Check **`docs/`** for any relevant planning documents before assuming something isn't
+   defined. The product vision, curriculum, and architecture decisions live there.
+3. Check **`.claude/KNOWN_ISSUES.md`** for open decisions that may affect your task.
+
 ---
 
 ## 1. Core Principles
@@ -37,7 +45,27 @@ Do NOT spawn a sub-agent when:
 - The task depends on results not yet returned by another agent.
 - The overhead of coordination exceeds the benefit.
 
-### 2.2 Sub-Agent Responsibilities
+### 2.2 Git Worktrees for All Code-Writing Sub-Agents
+
+**Any sub-agent that writes or edits files must run in an isolated git worktree.**
+
+Pass `isolation: "worktree"` when spawning:
+
+```
+Agent({
+  subagent_type: "general-purpose",
+  isolation: "worktree",
+  prompt: "..."
+})
+```
+
+Why: parallel agents writing to the same working tree cause conflicts and corrupt state.
+A worktree gives each agent its own isolated copy of the repo on a throwaway branch.
+The orchestrator merges completed worktree branches back to the feature branch.
+
+Research-only agents (Explore, read-only general-purpose) do NOT need worktrees.
+
+### 2.3 Sub-Agent Responsibilities
 
 Each sub-agent must be briefed with:
 
@@ -54,7 +82,7 @@ Sub-agents must **not**:
 - Push to branches unless explicitly told to.
 - Make assumptions about intent — surface ambiguity and return it to the orchestrator.
 
-### 2.3 Orchestrator Responsibilities
+### 2.4 Orchestrator Responsibilities
 
 The orchestrating agent (top-level Claude Code session) is responsible for:
 - Synthesizing sub-agent output before acting on it.
@@ -62,7 +90,7 @@ The orchestrating agent (top-level Claude Code session) is responsible for:
 - Deciding whether to spawn, re-use, or terminate sub-agents.
 - Escalating unresolved ambiguity to the user via `AskUserQuestion`.
 
-### 2.4 Avoiding Duplicate Work
+### 2.5 Avoiding Duplicate Work
 
 - Never run the same search or read in both the orchestrator and a sub-agent.
 - If a sub-agent is assigned research, the orchestrator must wait for results before
@@ -75,6 +103,10 @@ The orchestrating agent (top-level Claude Code session) is responsible for:
 
 ### 3.1 Protect the Main Context
 
+- **Read `.claude/CODEBASE.md` before any file exploration.** It documents where
+  everything lives. Use it to target reads directly instead of sweeping directories.
+- **Check `docs/` before assuming something is undefined.** Product decisions, curriculum
+  design, and architecture rationale are documented there.
 - Offload large file reads, broad codebase exploration, and multi-step research to
   sub-agents with `subagent_type: Explore` or `general-purpose`.
 - Prefer targeted tool calls (Glob, Grep with specific paths) over broad sweeps.
@@ -99,11 +131,13 @@ The orchestrating agent (top-level Claude Code session) is responsible for:
 
 | Situation | Preferred approach |
 |---|---|
+| Orient to the codebase | Read `.claude/CODEBASE.md` first — do not sweep directories |
 | Find a class/function | `Glob` or `Grep` with specific pattern |
 | Understand a module | Read only the relevant file sections |
 | Broad exploration | `Agent` with `subagent_type: Explore` |
 | Web research | `Agent` with `subagent_type: general-purpose` |
 | Codebase-wide refactor | Plan first with `subagent_type: Plan`, then implement |
+| After adding files/modules | Update `.claude/CODEBASE.md` immediately |
 
 ---
 
@@ -162,17 +196,15 @@ Every PR must include tests for:
 
 ### 5.4 Running Tests
 
-Always use the `Makefile` targets — never guess the underlying command:
+Always use `npm run` — never invoke the underlying tools directly:
 
 ```bash
-make test       # Run the full test suite
-make lint       # Run linter only
-make check      # lint + test combined
-make pre-pr     # Full pre-PR gate (runs scripts/pre-pr-check.sh)
+npm run lint      # ESLint + tsc --noEmit
+npm test          # Jest test suite
+npm run check     # lint + test combined
+npm run build     # Production build (catches errors dev mode misses)
+npm run pre-pr    # Full pre-PR gate (runs scripts/pre-pr-check.sh)
 ```
-
-If `make test` reports "No test command configured", the stack hasn't been set yet.
-Check `Makefile` for the `TEST_CMD` variable and update it, or ask the user.
 
 ---
 
@@ -181,21 +213,22 @@ Check `Makefile` for the `TEST_CMD` variable and update it, or ask the user.
 Run the automated gate first:
 
 ```bash
-make pre-pr
+npm run pre-pr
 ```
 
 `scripts/pre-pr-check.sh` enforces:
 
 - [ ] All new code has tests written and passing.
-- [ ] The full test suite passes locally with no failures.
-- [ ] The linter/formatter reports no errors.
+- [ ] The full test suite passes (`npm test`).
+- [ ] ESLint and TypeScript report no errors (`npm run lint`).
+- [ ] Production build succeeds (`npm run build`).
 - [ ] No secrets, credentials, or debug artifacts are staged.
 - [ ] The branch is up to date with the base branch (no avoidable merge conflicts).
 - [ ] The PR title is under 70 characters and describes the change, not the work done.
 - [ ] The PR body uses `.github/pull_request_template.md` (auto-applied by GitHub).
 - [ ] No unrelated files are included in the diff.
 
-If `make pre-pr` exits non-zero, fix all failures before pushing.
+If `npm run pre-pr` exits non-zero, fix all failures before pushing.
 Do not use `--no-verify` to bypass hooks. Do not open a PR with a failing gate.
 
 ---
@@ -265,4 +298,4 @@ Keep CLAUDE.md focused on conventions; put all issue tracking there.
 
 ---
 
-*Last updated: 2026-04-04. Update this file whenever agent conventions change. Log decisions in `.claude/KNOWN_ISSUES.md`.*
+*Last updated: 2026-04-04. Makefile removed — all tasks now use `npm run`. Update this file whenever agent conventions change. Log decisions in `.claude/KNOWN_ISSUES.md`.*
