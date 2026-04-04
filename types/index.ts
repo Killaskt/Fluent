@@ -1,55 +1,72 @@
 // ── Lesson content types ────────────────────────────────────────────────────
 
-export type StepType = "concept" | "see-it" | "try-it" | "lock-it";
+export type StepType = "concept" | "see_it" | "try_it" | "lock_it";
+
+export type TryItSubtype =
+  | "prompt_challenge"
+  | "pick_best"
+  | "spot_problem"
+  | "match_it"
+  | "mini_task";
 
 export interface ConceptStep {
   type: "concept";
-  body: string; // Markdown
-  visual?: string; // Optional image URL or diagram description
+  heading: string;
+  body: string;
 }
 
 export interface SeeItStep {
-  type: "see-it";
-  description: string;
+  type: "see_it";
+  heading: string;
+  body: string;
+  image_url: string | null;
   example: {
-    prompt?: string;
-    output?: string;
-    caption?: string;
+    label: string;
+    content: string;
   };
 }
 
-export type TryItVariant =
-  | "prompt-challenge"
-  | "pick-best"
-  | "spot-problem"
-  | "match"
-  | "mini-task";
-
 export interface TryItStep {
-  type: "try-it";
-  variant: TryItVariant;
-  instructions: string;
-  // Variant-specific payload — kept loose here, narrowed in components
-  payload: Record<string, unknown>;
+  type: "try_it";
+  subtype: TryItSubtype;
+  heading: string;
+  scenario: string;
+  rubric: string;
+  expert_prompt: string;
+  max_attempts: number;
 }
 
 export interface LockItStep {
-  type: "lock-it";
+  type: "lock_it";
   question: string;
   options: string[];
-  correctIndex: number;
+  correct_index: number;
   explanation: string;
 }
 
 export type LessonStep = ConceptStep | SeeItStep | TryItStep | LockItStep;
 
 export interface Lesson {
-  id: string; // e.g. "qs-1", "f2-3", "ow-1-4"
+  id: string;
+  track_id: string;
   title: string;
-  module: string; // e.g. "Quick-Start", "F2", "OW-1"
   xp: number;
   steps: LessonStep[];
-  badgeOnComplete?: string; // Badge ID awarded on completion
+}
+
+export interface PlacementTest {
+  questions: LockItStep[];
+  pass_threshold: number;
+}
+
+export interface Track {
+  id: string;
+  title: string;
+  tier: "free" | "premium";
+  order: number;
+  prerequisites: string[];
+  placement_test: PlacementTest | null;
+  lessons: string[];
 }
 
 // ── Gamification types ───────────────────────────────────────────────────────

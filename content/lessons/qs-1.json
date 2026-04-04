@@ -1,0 +1,42 @@
+{
+  "id": "qs-1",
+  "track_id": "quick-start-office",
+  "title": "Let AI Handle the Email You've Been Avoiding",
+  "xp": 15,
+  "steps": [
+    {
+      "type": "concept",
+      "heading": "The 30-second email trick",
+      "body": "There's always one. An email from a client who's being difficult. A vendor who won't take no for an answer. A colleague asking for something unreasonable.\n\nYou've been staring at it for three days.\n\n**Here's the move:** paste the email into an AI tool like Claude, and ask it to draft a reply for you. It takes 30 seconds, and the draft is usually 80% of the way there — you just clean it up.\n\nYou don't need to learn anything complicated. You paste, you ask, you edit, you send."
+    },
+    {
+      "type": "see_it",
+      "heading": "Here's what that looks like",
+      "body": "A vendor kept pushing a software subscription we didn't want. Here's how AI handled it.",
+      "image_url": null,
+      "example": {
+        "label": "The prompt used:",
+        "content": "Here's an email from a vendor pushing a software subscription we've decided not to renew. Please write a professional reply that declines clearly but keeps the relationship warm — we may want to work with them again in the future.\n\n---\nHi,\n\nI wanted to follow up again on the renewal for your ProDash subscription. Your licence expires in 12 days and I'd hate for your team to lose access. We've also just launched ProDash Plus with AI-powered dashboards — I think you'd love it. Can we jump on a 15-minute call this week?\n\nBest,\nMarcus\n---\n\nAI reply:\n\nHi Marcus,\n\nThank you for the follow-up. After reviewing our needs, we've decided not to renew our ProDash subscription at this time. This isn't a reflection on the product — the timing just doesn't work for us right now.\n\nWe appreciate the relationship and will definitely keep ProDash in mind for future projects. Wishing you and the team continued success.\n\nBest,\n[Name]"
+      }
+    },
+    {
+      "type": "try_it",
+      "subtype": "prompt_challenge",
+      "heading": "Your turn — write the prompt",
+      "scenario": "You need to reply to this email from a client:\n\n---\n\"Hi, I know we agreed the project would wrap up on the 15th, but something's come up on our end and we really need to push the delivery to the 8th — one week earlier. I know it's a big ask. Let me know if that works.\"\n---\n\nThis is a scheduling conflict. You can't hit the 8th. Write a prompt you'd give to an AI to draft your reply. Don't write the reply itself — write the prompt you'd use to get the AI to write it for you.",
+      "rubric": "You are evaluating whether a learner has written an effective prompt to get an AI to draft a professional email reply. A good prompt should do most of the following:\n\n1. Provide context about the situation — not just 'write a reply' but what the situation actually is (the client wants to move a deadline earlier, you cannot meet that request).\n2. Specify the desired tone — e.g. professional, empathetic, firm, warm, apologetic.\n3. Ask for a specific outcome — e.g. decline the new date, propose an alternative, keep the relationship positive.\n4. Optionally: mention any relevant constraints (e.g. the team is fully booked, there is another milestone in the way).\n\nA weak prompt is vague and gives the AI nothing to work with ('write a reply to this email'). A strong prompt gives the AI enough that it can draft something useful without the user needing to edit heavily.\n\nScore the prompt: if it includes at least context + tone OR context + outcome, mark it as passing. If it is just 'write a reply' or similarly content-free, mark it as failing and explain what is missing.",
+      "expert_prompt": "Here's an email from a client asking to move our project deadline one week earlier, from the 15th to the 8th. I can't meet the 8th — the team is committed to other deliverables until the 12th at the earliest. Please draft a reply that: declines the new date professionally and empathetically, acknowledges that I understand it's a difficult situation for them, and proposes the 12th as a possible compromise. Keep the tone warm and solution-focused.",
+      "max_attempts": 2
+    },
+    {
+      "type": "lock_it",
+      "question": "Which of these prompts would get you a better reply to a difficult email?",
+      "options": [
+        "Write a reply to this email declining the request.",
+        "Here's an email from a client pushing back on our pricing. Write a reply that holds firm on the price but acknowledges their concern and offers a payment plan as an alternative. Keep the tone professional and collaborative."
+      ],
+      "correct_index": 1,
+      "explanation": "The second prompt works because it gives the AI three things: the situation (pricing pushback), the desired outcome (hold firm, offer an alternative), and the tone (professional, collaborative). The first prompt gives the AI almost nothing — it will produce a generic reply that you'll have to rewrite anyway."
+    }
+  ]
+}
