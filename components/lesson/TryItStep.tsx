@@ -15,7 +15,7 @@ interface Props {
   onComplete: (firstTry: boolean) => void;
 }
 
-type Phase = "input" | "loading" | "result";
+type Phase = "input" | "loading" | "result" | "error";
 
 export default function TryItStep({ step, lessonId, onComplete }: Props) {
   const [userPrompt, setUserPrompt] = useState("");
@@ -23,6 +23,7 @@ export default function TryItStep({ step, lessonId, onComplete }: Props) {
   const [result, setResult] = useState<ScoreResponse | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [isFirstTry, setIsFirstTry] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const maxAttempts = step.max_attempts;
   const rubric = step.rubric;
@@ -33,10 +34,7 @@ export default function TryItStep({ step, lessonId, onComplete }: Props) {
   async function handleSubmit() {
     if (!userPrompt.trim()) return;
     setPhase("loading");
-
-    const currentAttempt = attempts + 1;
-    setAttempts(currentAttempt);
-    if (currentAttempt > 1) setIsFirstTry(false);
+    setApiError(null);
 
     try {
       const res = await fetch("/api/score-prompt", {
@@ -46,25 +44,36 @@ export default function TryItStep({ step, lessonId, onComplete }: Props) {
       });
 
       if (!res.ok) {
-        throw new Error("Score request failed");
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(body.error ?? `Server error ${res.status}`);
       }
 
       const data = (await res.json()) as ScoreResponse;
+
+      // Only count as an attempt on a real score response
+      const currentAttempt = attempts + 1;
+      setAttempts(currentAttempt);
+      if (currentAttempt > 1) setIsFirstTry(false);
+
       setResult(data);
       setPhase("result");
-    } catch {
-      setResult({
-        score: 0,
-        feedback: "Something went wrong. Please try again.",
-        passed: false,
-      });
-      setPhase("result");
+    } catch (err) {
+      // API errors don't consume an attempt — user can retry freely
+      setApiError(
+        err instanceof Error ? err.message : "Couldn't reach the scorer"
+      );
+      setPhase("error");
     }
   }
 
   function handleRetry() {
-    setUserPrompt("");
     setResult(null);
+    setApiError(null);
+    setPhase("input");
+  }
+
+  function handleErrorRetry() {
+    setApiError(null);
     setPhase("input");
   }
 
@@ -124,6 +133,23 @@ export default function TryItStep({ step, lessonId, onComplete }: Props) {
         <div className="flex flex-col items-center gap-4 py-8">
           <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
           <p className="text-gray-500 text-sm">Evaluating your prompt…</p>
+        </div>
+      )}
+
+      {phase === "error" && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-800 mb-1">
+            Scorer unavailable
+          </p>
+          <p className="text-xs text-amber-700 mb-3">
+            {apiError ?? "Couldn't reach the AI scorer right now."} Your attempt wasn&apos;t counted.
+          </p>
+          <button
+            onClick={handleErrorRetry}
+            className="w-full rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 text-sm transition-colors"
+          >
+            Try again
+          </button>
         </div>
       )}
 
