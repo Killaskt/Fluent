@@ -16,7 +16,7 @@ export async function scorePrompt(
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const message = await client.messages.create({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 512,
     system: `You are a prompt-quality evaluator. You will be given a rubric and a user's prompt.
 Evaluate the prompt against the rubric and return a JSON object with exactly these two fields:
@@ -40,11 +40,20 @@ Respond with ONLY valid JSON. No markdown fences, no extra text.`,
     throw new Error("Unexpected response type from Claude");
   }
 
+  // Strip markdown fences if Claude wraps the JSON despite instructions
+  const cleaned = raw.text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  console.log("[scorePrompt] raw response:", cleaned);
+
   let parsed: { score: number; feedback: string };
   try {
-    parsed = JSON.parse(raw.text) as { score: number; feedback: string };
+    parsed = JSON.parse(cleaned) as { score: number; feedback: string };
   } catch {
-    throw new Error("Claude returned invalid JSON");
+    console.error("[scorePrompt] failed to parse:", cleaned);
+    throw new Error(`Claude returned invalid JSON: ${cleaned.slice(0, 100)}`);
   }
 
   if (typeof parsed.score !== "number" || typeof parsed.feedback !== "string") {
