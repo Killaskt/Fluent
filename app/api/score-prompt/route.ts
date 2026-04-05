@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scorePrompt } from "@/lib/claude";
+import { log } from "@/lib/logger";
 
 interface RequestBody {
   prompt: string;
@@ -28,20 +29,26 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("[score-prompt] ANTHROPIC_API_KEY is not set");
+    log.error("ANTHROPIC_API_KEY is not set", { lessonId });
     return NextResponse.json(
       { error: "ANTHROPIC_API_KEY is not configured on the server." },
       { status: 503 }
     );
   }
 
+  log.info("score-prompt request", { lessonId, promptLength: prompt.length });
+
   try {
     const result = await scorePrompt(prompt, rubric);
+    log.info("score-prompt result", { lessonId, score: result.score, passed: result.passed });
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[score-prompt] Claude API error:", err);
+    log.error("score-prompt failed", {
+      lessonId,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json(
-      { error: "Scoring failed. Please try again." },
+      { error: err instanceof Error ? err.message : "Scoring failed. Please try again." },
       { status: 500 }
     );
   }

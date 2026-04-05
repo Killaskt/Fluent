@@ -1,84 +1,84 @@
-import { scorePrompt } from "@/lib/claude";
+// Tests for parseScoreResponse are written against real response shapes —
+// no SDK mock, no guessing. Fixtures below reflect actual Claude output.
+// If Claude's format changes, update fixtures first, then fix the code.
+//
+// scorePrompt() (the API call itself) is not unit tested here because
+// mocking the SDK means asserting our own assumptions. Integration tests
+// against the real API belong in a separate suite run with ANTHROPIC_API_KEY.
 
-// Mock the Anthropic SDK
-jest.mock("@anthropic-ai/sdk", () => {
-  return {
-    __esModule: true,
-    default: jest.fn(),
-  };
-});
+import { parseScoreResponse } from "@/lib/score-parser";
 
-import Anthropic from "@anthropic-ai/sdk";
+describe("parseScoreResponse", () => {
+  describe("clean JSON (ideal response)", () => {
+    it("passes when score >= 0.7", () => {
+      const result = parseScoreResponse(
+        '{"score": 0.8, "feedback": "Good context and tone specified."}'
+      );
+      expect(result.score).toBe(0.8);
+      expect(result.passed).toBe(true);
+      expect(result.feedback).toBe("Good context and tone specified.");
+    });
 
-const MockedAnthropic = Anthropic as unknown as jest.Mock;
+    it("fails when score < 0.7", () => {
+      const result = parseScoreResponse(
+        '{"score": 0.4, "feedback": "Too vague — try adding the desired tone."}'
+      );
+      expect(result.passed).toBe(false);
+    });
 
-function makeCreateMock(responseText: string) {
-  const createFn = jest.fn().mockResolvedValue({
-    content: [{ type: "text", text: responseText }],
-  });
-  MockedAnthropic.mockImplementation(() => ({
-    messages: { create: createFn },
-  }));
-  return createFn;
-}
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-
-describe("scorePrompt", () => {
-  it("returns passed=true when score >= 0.7", async () => {
-    makeCreateMock(JSON.stringify({ score: 0.85, feedback: "Great job!" }));
-
-    const result = await scorePrompt("Write a haiku", "Check for haiku structure");
-    expect(result.passed).toBe(true);
-    expect(result.score).toBe(0.85);
-    expect(result.feedback).toBe("Great job!");
+    it("passes exactly at the 0.7 threshold", () => {
+      const result = parseScoreResponse(
+        '{"score": 0.7, "feedback": "Meets the bar."}'
+      );
+      expect(result.passed).toBe(true);
+    });
   });
 
-  it("returns passed=false when score < 0.7", async () => {
-    makeCreateMock(JSON.stringify({ score: 0.5, feedback: "Needs work" }));
+  describe("markdown fence responses (Claude ignores no-fence instruction)", () => {
+    it("strips ```json ... ``` fences", () => {
+      // Real Claude response shape when it wraps JSON in fences
+      const raw = '```json\n{"score": 0.9, "feedback": "Excellent detail."}\n```';
+      const result = parseScoreResponse(raw);
+      expect(result.score).toBe(0.9);
+      expect(result.passed).toBe(true);
+    });
 
-    const result = await scorePrompt("bad prompt", "detailed rubric");
-    expect(result.passed).toBe(false);
-    expect(result.score).toBe(0.5);
+    it("strips plain ``` fences without language tag", () => {
+      const raw = '```\n{"score": 0.5, "feedback": "Missing tone."}\n```';
+      const result = parseScoreResponse(raw);
+      expect(result.score).toBe(0.5);
+      expect(result.passed).toBe(false);
+    });
+
+    it("handles fences with trailing whitespace", () => {
+      const raw = '```json  \n{"score": 0.8, "feedback": "Good."}\n```  ';
+      expect(parseScoreResponse(raw).score).toBe(0.8);
+    });
   });
 
-  it("returns passed=true exactly at 0.7 threshold", async () => {
-    makeCreateMock(JSON.stringify({ score: 0.7, feedback: "Just enough" }));
+  describe("malformed responses", () => {
+    it("throws with snippet when response is not JSON", () => {
+      expect(() => parseScoreResponse("not json at all")).toThrow(
+        "Invalid JSON from scorer: not json at all"
+      );
+    });
 
-    const result = await scorePrompt("prompt", "rubric");
-    expect(result.passed).toBe(true);
-  });
+    it("throws when score field is missing", () => {
+      expect(() =>
+        parseScoreResponse('{"feedback": "Good job."}')
+      ).toThrow("missing required fields");
+    });
 
-  it("throws when Claude returns invalid JSON", async () => {
-    makeCreateMock("not json at all");
+    it("throws when feedback field is missing", () => {
+      expect(() => parseScoreResponse('{"score": 0.8}')).toThrow(
+        "missing required fields"
+      );
+    });
 
-    await expect(scorePrompt("prompt", "rubric")).rejects.toThrow(
-      "Claude returned invalid JSON"
-    );
-  });
-
-  it("throws when response is missing required fields", async () => {
-    makeCreateMock(JSON.stringify({ score: 0.8 })); // missing feedback
-
-    await expect(scorePrompt("prompt", "rubric")).rejects.toThrow(
-      "Claude response missing required fields"
-    );
-  });
-
-  it("sends the rubric as system prompt content", async () => {
-    const createFn = makeCreateMock(
-      JSON.stringify({ score: 0.9, feedback: "Perfect" })
-    );
-
-    await scorePrompt("my prompt", "my rubric text");
-
-    expect(createFn).toHaveBeenCalledWith(
-      expect.objectContaining({
-        system: expect.stringContaining("my rubric text"),
-        messages: [{ role: "user", content: "my prompt" }],
-      })
-    );
+    it("throws when score is a string instead of number", () => {
+      expect(() =>
+        parseScoreResponse('{"score": "0.8", "feedback": "Good."}')
+      ).toThrow("missing required fields");
+    });
   });
 });

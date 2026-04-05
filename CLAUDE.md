@@ -194,6 +194,35 @@ Every PR must include tests for:
 - Test names must describe the behavior being verified, not the implementation detail.
 - Do not write tests that only check that code runs without error — assert actual outcomes.
 
+### 5.4 No Guessing Response Models
+
+**Never mock an external API response shape you haven't verified.**
+
+The pattern to follow for any external API (Claude, Supabase, etc.):
+
+1. **Separate parsing from the call.** Any function that calls an external API must have
+   a pure parsing function extracted alongside it (e.g. `parseScoreResponse`). The parser
+   is unit-testable without mocking anything.
+2. **Fixtures reflect real responses.** Test fixtures must be copied from actual API
+   responses — not invented. Include edge cases you've observed (e.g. Claude wrapping JSON
+   in markdown fences despite instructions).
+3. **SDK mocks test the call, not the parsing.** If you mock the SDK, you're only testing
+   that you called it correctly — not that you handled what it actually returns. These are
+   different concerns.
+4. **Integration tests own real connectivity.** Tests that need a live API key belong in
+   `__tests__/integration/` and are skipped in CI unless `INTEGRATION=true`. Never skip
+   this suite before a production deploy.
+
+### 5.5 Logging Requirements
+
+- **Never use `console.log` directly in API routes or server lib functions.** Use
+  `log.info`, `log.warn`, `log.error` from `lib/logger.ts` — it outputs structured JSON
+  that Vercel captures and makes searchable.
+- Every API route must log: request received (with non-sensitive params), result, and any
+  errors with the full error message.
+- Errors returned to the client must include the actual error message, not a generic
+  "something went wrong" — generic messages make debugging blind.
+
 ### 5.4 Running Tests
 
 Always use `npm run` — never invoke the underlying tools directly:

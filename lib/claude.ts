@@ -1,18 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { log } from "@/lib/logger";
+import { parseScoreResponse } from "@/lib/score-parser";
 
-export interface ScoreResult {
-  score: number;
-  feedback: string;
-  passed: boolean;
-}
-
-const PASS_THRESHOLD = 0.7;
+export type { ScoreResult } from "@/lib/score-parser";
+export { parseScoreResponse } from "@/lib/score-parser";
 
 // scorePrompt evaluates a user's prompt against a rubric using Claude.
 export async function scorePrompt(
   userPrompt: string,
   rubric: string
-): Promise<ScoreResult> {
+): Promise<ReturnType<typeof parseScoreResponse>> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const message = await client.messages.create({
@@ -27,12 +24,7 @@ Rubric:
 ${rubric}
 
 Respond with ONLY valid JSON. No markdown fences, no extra text.`,
-    messages: [
-      {
-        role: "user",
-        content: userPrompt,
-      },
-    ],
+    messages: [{ role: "user", content: userPrompt }],
   });
 
   const raw = message.content[0];
@@ -40,29 +32,6 @@ Respond with ONLY valid JSON. No markdown fences, no extra text.`,
     throw new Error("Unexpected response type from Claude");
   }
 
-  // Strip markdown fences if Claude wraps the JSON despite instructions
-  const cleaned = raw.text
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-
-  console.log("[scorePrompt] raw response:", cleaned);
-
-  let parsed: { score: number; feedback: string };
-  try {
-    parsed = JSON.parse(cleaned) as { score: number; feedback: string };
-  } catch {
-    console.error("[scorePrompt] failed to parse:", cleaned);
-    throw new Error(`Claude returned invalid JSON: ${cleaned.slice(0, 100)}`);
-  }
-
-  if (typeof parsed.score !== "number" || typeof parsed.feedback !== "string") {
-    throw new Error("Claude response missing required fields");
-  }
-
-  return {
-    score: parsed.score,
-    feedback: parsed.feedback,
-    passed: parsed.score >= PASS_THRESHOLD,
-  };
+  log.info("scorePrompt raw response", { raw: raw.text });
+  return parseScoreResponse(raw.text);
 }
