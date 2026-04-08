@@ -10,6 +10,7 @@ const config = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },
+  testPathIgnorePatterns: ["/node_modules/", "/.claude/worktrees/"],
 };
 
 module.exports = createJestConfig(config);

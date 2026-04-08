@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fluent.app/schemas/lesson.json",
+  "title": "Lesson",
+  "description": "Schema for a single Fluent lesson file in content/lessons/{id}.json",
+  "type": "object",
+  "required": ["id", "track_id", "title", "xp", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique lesson identifier, e.g. 'qs-1', 'f1-3', 'ow-2-4'",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "track_id": {
+      "type": "string",
+      "description": "ID of the track this lesson belongs to, must match an entry in tracks.json"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable lesson title shown in the UI"
+    },
+    "xp": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "XP awarded to the user on lesson completion"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered sequence of lesson steps. A complete lesson should have at least one of each: concept, see_it, try_it, lock_it.",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/definitions/ConceptStep" },
+          { "$ref": "#/definitions/SeeItStep" },
+          { "$ref": "#/definitions/TryItStep" },
+          { "$ref": "#/definitions/LockItStep" }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ConceptStep": {
+      "type": "object",
+      "description": "Introduces a concept with a heading and markdown body. No interaction required.",
+      "required": ["type", "heading", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "concept" },
+        "heading": { "type": "string" },
+        "body": {
+          "type": "string",
+          "description": "Markdown-formatted explanation of the concept"
+        }
+      }
+    },
+    "SeeItStep": {
+      "type": "object",
+      "description": "Shows a worked example — a real prompt and its AI output.",
+      "required": ["type", "heading", "body", "image_url", "example"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "see_it" },
+        "heading": { "type": "string" },
+        "body": {
+          "type": "string",
+          "description": "Context explaining what the user is about to see"
+        },
+        "image_url": {
+          "type": ["string", "null"],
+          "description": "Optional screenshot or diagram URL"
+        },
+        "example": {
+          "type": "object",
+          "required": ["label", "content"],
+          "additionalProperties": false,
+          "properties": {
+            "label": {
+              "type": "string",
+              "description": "Short label shown above the example, e.g. 'The prompt used:'"
+            },
+            "content": {
+              "type": "string",
+              "description": "The example prompt or AI output to display"
+            }
+          }
+        }
+      }
+    },
+    "TryItStep": {
+      "type": "object",
+      "description": "Interactive exercise. The user writes a prompt that is scored by Claude.",
+      "required": ["type", "subtype", "heading", "scenario", "rubric", "expert_prompt", "max_attempts"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "try_it" },
+        "subtype": {
+          "type": "string",
+          "enum": ["prompt_challenge", "pick_best", "spot_problem", "match_it", "mini_task"],
+          "description": "Determines which interactive component renders this step"
+        },
+        "heading": { "type": "string" },
+        "scenario": {
+          "type": "string",
+          "description": "The situation presented to the learner — sets the context for their prompt"
+        },
+        "rubric": {
+          "type": "string",
+          "description": "Used verbatim as the Claude system prompt when scoring the user's attempt. Be specific about what makes a good prompt in this context."
+        },
+        "expert_prompt": {
+          "type": "string",
+          "description": "A high-quality example prompt shown to the user after max_attempts are exhausted"
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "How many tries the user gets before the expert_prompt is revealed"
+        }
+      }
+    },
+    "LockItStep": {
+      "type": "object",
+      "description": "Multiple-choice comprehension check. Locks in the learning before the next lesson.",
+      "required": ["type", "question", "options", "correct_index", "explanation"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "lock_it" },
+        "question": { "type": "string" },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": { "type": "string" }
+        },
+        "correct_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based index into options[] of the correct answer"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Shown after the user answers — explains why the correct answer is right"
+        }
+      }
+    }
+  }
+}
